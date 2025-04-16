@@ -16,7 +16,7 @@ venv/
 
 # Task data files (do not commit task state)
 custom_tasks.json
-canvas_tasks.json
+tasks.json
 generated_schedule.ics
 
 # Logs
