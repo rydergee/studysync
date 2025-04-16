@@ -1,0 +1,37 @@
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# VSCode settings
+.vscode/
+
+# macOS-specific
+.DS_Store
+
+# Task data files (do not commit task state)
+custom_tasks.json
+canvas_tasks.json
+generated_schedule.ics
+
+# Logs
+*.log
+
+# OS junk
+Thumbs.db
+
+# Compiled binaries (if any)
+*.so
+*.o
+*.out
+*.exe
+
+# Python package files
+*.egg-info/
+dist/
+build/
