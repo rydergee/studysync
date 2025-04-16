@@ -57,3 +57,13 @@ def assign_task_ids(tasks):
     for idx, task in enumerate(tasks):
         task["id"] = idx
     return tasks
+
+def mark_complete(task_id, tasks):
+    for task in tasks:
+        if task["id"] == task_id:
+            task["completed"] = True
+            task["remaining_duration"] = 0
+            save_tasks([t for t in all_tasks if t["source"] == "canvas"])
+            save_custom_tasks([t for t in all_tasks if t["source"] == "custom"])
+            return task
+    return None

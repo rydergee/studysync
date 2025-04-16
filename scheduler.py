@@ -11,4 +11,12 @@ def schedule(args):
         if(task["source"] == "custom"):
             save_custom_tasks(load_custom_tasks() + [task])
         print(f"Added task: {task['summary']}")
-        
+    
+    elif arg.command == "complete":
+        task_id = int(args.id)
+        mark_complete(task_id, tasks)
+        if task:
+            print(f"Task '{task['summary']}' marked as complete.")
+        else:
+            print(f"Task with ID {task_id} not found.")
+            
