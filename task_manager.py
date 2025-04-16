@@ -45,13 +45,12 @@ def initialize_tasks():
 
 # Task Management
 
-def create_task(summary, due_date=None, est_hours=None, source="custom"):
+def create_task(summary, due_date=None, hours=0, source="custom"):
     return {
         "id": None,
         "summary": summary,
         "due": due_date,
-        "estimated_time": est_hours,
-        "remaining_time": est_hours,
+        "time_spent": hours,
         "completed": False,
         "source": source
     }
@@ -65,7 +64,6 @@ def mark_complete(task_id, tasks):
     for task in tasks:
         if task["id"] == task_id:
             task["completed"] = True
-            task["remaining_duration"] = 0
             save_tasks([t for t in tasks if t["source"] == "canvas"])
             save_custom_tasks([t for t in tasks if t["source"] == "custom"])
             return task

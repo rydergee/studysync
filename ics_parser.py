@@ -14,8 +14,7 @@ def load_ics_events(filepath):
             events.append({
                 "id": None,
                 "summary": str(event.get("summary")),
-                "estimated_time": None,
-                "remaining_time": None,
+                "time_spent": 0,
                 "due": dt,
                 "completed": False,
                 "source": "canvas"

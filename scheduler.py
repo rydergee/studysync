@@ -1,5 +1,27 @@
 import argparse
 from task_manager import *
+from datetime import datetime, timedelta, time
+
+# Free study periods during the week
+STUDY_BLOCKS = {
+    "Monday": [("14:00", "17:00")],
+    "Tuesday": [("10:00", "12:00"), ("15:00", "17:00")],
+    "Wednesday": [],
+    "Thursday": [("09:00", "11:00")],
+    "Friday": [("13:00", "16:00")],
+    "Saturday": [],
+    "Sunday": [("10:00", "14:00")]
+}
+# Study block management
+def get_study_blocks_for_day(day: datetime.date):
+    weekday = day.strftime("%A")  # e.g. "Monday"
+    blocks = STUDY_BLOCKS.get(weekday, [])
+    result = []
+    for start_str, end_str in blocks:
+        start_time = datetime.combine(day, datetime.strptime(start_str, "%H:%M").time())
+        end_time = datetime.combine(day, datetime.strptime(end_str, "%H:%M").time())
+        result.append((start_time, end_time))
+    return result
 
 # Command line interface
 def schedule(args):
