@@ -83,12 +83,20 @@ STUDY_BLOCKS = {
 }
 
 # Study block management
-def get_study_blocks_for_day(day: datetime.date):
-    weekday = day.strftime("%A")  # e.g. "Monday"
-    blocks = STUDY_BLOCKS.get(weekday, [])
-    result = []
-    for start_str, end_str in blocks:
-        start_time = datetime.combine(day, datetime.strptime(start_str, "%H:%M").time())
-        end_time = datetime.combine(day, datetime.strptime(end_str, "%H:%M").time())
-        result.append((start_time, end_time))
-    return result
+def get_study_blocks_for_week(start_date: datetime.date):
+    study_blocks_for_week = []
+    
+    for i in range(7):  # Looping over the next 7 days (one week)
+        day = start_date + timedelta(days=i)
+        weekday = day.strftime("%A")  # e.g. "Monday"
+        blocks = STUDY_BLOCKS.get(weekday, [])
+        result = []
+        
+        for start_str, end_str in blocks:
+            start_time = datetime.combine(day, datetime.strptime(start_str, "%H:%M").time())
+            end_time = datetime.combine(day, datetime.strptime(end_str, "%H:%M").time())
+            result.append((start_time, end_time))
+        
+        study_blocks_for_week.append((day, result))
+    
+    return study_blocks_for_week

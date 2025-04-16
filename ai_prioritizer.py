@@ -4,16 +4,16 @@ import os
 from dotenv import load_dotenv
 import google.generativeai as genai
 from dateutil.parser import parse as parse_date
-from datetime import date
+from datetime import date, timedelta
 import re
 from icalendar import Calendar, Event
 from datetime import datetime
 from uuid import uuid4
 
 # Write schedule to ics file
-def write_daily_schedule_to_ics(scheduled_chunks, tasks, filename="generated_schedule.ics"):
+def write_weekly_schedule_to_ics(scheduled_chunks, tasks, filename="generated_schedule.ics"):
     cal = Calendar()
-    cal.add('prodid', '-//StudySync Daily Schedule//')
+    cal.add('prodid', '-//StudySync Weekly Schedule//')
     cal.add('version', '2.0')
 
     for chunk in scheduled_chunks:
@@ -40,11 +40,11 @@ def write_daily_schedule_to_ics(scheduled_chunks, tasks, filename="generated_sch
 
     print(f"✅ Wrote schedule to {filename}")
 
-
 load_dotenv()
 
-def get_active_tasks_for_day(tasks, today):
-    three_weeks_from_now = today + timedelta(weeks=3)
+def get_active_tasks_for_week(tasks, start_date):
+    # Get tasks for the next 7 days from the start date
+    end_date = start_date + timedelta(days=21)
     active = []
 
     for task in tasks:
@@ -55,7 +55,7 @@ def get_active_tasks_for_day(tasks, today):
         if due_str:
             try:
                 due_date = datetime.fromisoformat(due_str).date()
-                if due_date < today or due_date > three_weeks_from_now:
+                if due_date < start_date or due_date > end_date:
                     continue
             except ValueError:
                 continue  # skip invalid date formats
@@ -67,7 +67,7 @@ def get_active_tasks_for_day(tasks, today):
 def create_gemini_prompt(tasks, study_blocks):
     # Creating the prompt string
     prompt = f"""
-    You are a smart personal task scheduler. Based on the following study blocks and task list for today, create an optimal schedule to maximize efficiency and ensure upcoming deadlines are met. Fit tasks into the available blocks. Respond with a JSON list of scheduled chunks.
+    You are a smart personal task scheduler. Based on the following study blocks and task list for the next week, create an optimal schedule to maximize efficiency and ensure upcoming deadlines are met. Fit tasks into the available blocks. Respond with a JSON list of scheduled chunks.
 
     Study blocks:
     {json.dumps(study_blocks, indent=2)}
@@ -81,10 +81,6 @@ def create_gemini_prompt(tasks, study_blocks):
 
     **NOTE** Quizes & Code Runners only open a week prior to their due date
     """
-
-    # Print the final prompt (for debugging)
-    #print(prompt)
-    
     return prompt
 
 # Connecting to Gemini
@@ -111,7 +107,7 @@ def get_optimized_schedule_from_gemini(prompt):
         print("❌ Failed to decode JSON:", e)
         print("⚠️ Gemini response not JSON-decodable. Output:\n", content)
         return []
-    
+
 # Edit the task instances and update time_spent
 def apply_scheduled_chunks_to_tasks(scheduled_blocks, tasks):
     for chunk in scheduled_blocks:
@@ -126,21 +122,19 @@ def apply_scheduled_chunks_to_tasks(scheduled_blocks, tasks):
         save_tasks([t for t in tasks if t["source"] == "canvas"])
         save_custom_tasks([t for t in tasks if t["source"] == "custom"])
 
-# Main ai schedule planner function
 def ai_schedule():
     today = date.today()
 
     # load tasks
     tasks = initialize_tasks()
 
-    active_tasks = get_active_tasks_for_day(tasks, today)
-    study_blocks = get_study_blocks_for_day(today)
+    active_tasks = get_active_tasks_for_week(tasks, today)
+    study_blocks = get_study_blocks_for_week(today) 
 
-    if(study_blocks == []):
-        print("No study blocks on this day.")
+    if not study_blocks:
+        print("No study blocks this week.")
         return
     
-    active_tasks = get_active_tasks_for_day(tasks, today)
     if not active_tasks:
         print("No active tasks for today!")
         return
@@ -149,7 +143,7 @@ def ai_schedule():
     print("🔧 Creating prompt for Gemini...")
     prompt = create_gemini_prompt(active_tasks, [
         {"start": start.isoformat(), "end": end.isoformat()}
-        for start, end in study_blocks
+        for day, blocks in study_blocks for start, end in blocks
     ])
 
     print("🧠 Sending prompt to Gemini for optimized scheduling...")
@@ -160,6 +154,6 @@ def ai_schedule():
     apply_scheduled_chunks_to_tasks(response, tasks)
     print("✅ Task time updated based on Gemini's schedule.")
 
-    print("📅 Writing today's schedule to ICS file...")
-    write_daily_schedule_to_ics(response, tasks)
-    print("✅ ICS calendar updated with today's plan!")
+    print("📅 Writing week's schedule to ICS file...")
+    write_weekly_schedule_to_ics(response, tasks, filename="weekly_schedule.ics")
+    print("✅ ICS calendar updated with the week's plan!")
