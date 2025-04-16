@@ -19,4 +19,8 @@ def schedule(args):
             print(f"Task '{task['summary']}' marked as complete.")
         else:
             print(f"Task with ID {task_id} not found.")
-            
+    
+    elif arg.command == "list":
+        for task in tasks:
+            status = "Complete" if task["completed"] else "Pending"
+            print(f"ID: {task['id']} | {task['summary']} | Due: {task["due"]} | Status: {status}")
