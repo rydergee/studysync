@@ -1,6 +1,8 @@
 import json
 import os
 from ics_parser import load_ics_events
+from datetime import datetime, timedelta, time
+
 
 TASKS_PATH = "tasks.json"
 CUSTOM_TASKS_PATH = "custom_tasks.json"
@@ -68,3 +70,25 @@ def mark_complete(task_id, tasks):
             save_custom_tasks([t for t in tasks if t["source"] == "custom"])
             return task
     return None
+
+# Free study periods during the week
+STUDY_BLOCKS = {
+    "Monday": [("13:00", "16:00"), ("18:00", "20:00")],
+    "Tuesday": [("13:00", "16:00"), ("18:00", "20:00")],
+    "Wednesday": [("13:00", "16:00"), ("18:00", "20:00")],
+    "Thursday": [("13:00", "16:00"), ("18:00", "20:00")],
+    "Friday": [("13:00", "16:00"), ("18:00", "20:00")],
+    "Saturday": [],
+    "Sunday": [("12:00", "15:00"), ("17:00", "18:00"), ("19:00", "21:00")]
+}
+
+# Study block management
+def get_study_blocks_for_day(day: datetime.date):
+    weekday = day.strftime("%A")  # e.g. "Monday"
+    blocks = STUDY_BLOCKS.get(weekday, [])
+    result = []
+    for start_str, end_str in blocks:
+        start_time = datetime.combine(day, datetime.strptime(start_str, "%H:%M").time())
+        end_time = datetime.combine(day, datetime.strptime(end_str, "%H:%M").time())
+        result.append((start_time, end_time))
+    return result
