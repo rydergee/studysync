@@ -12,19 +12,19 @@ def schedule(args):
             save_custom_tasks(load_custom_tasks() + [task])
         print(f"Added task: {task['summary']}")
     
-    elif arg.command == "complete":
+    elif args.command == "complete":
         task_id = int(args.id)
-        mark_complete(task_id, tasks)
+        task = mark_complete(task_id, tasks)
         if task:
             print(f"Task '{task['summary']}' marked as complete.")
         else:
             print(f"Task with ID {task_id} not found.")
     
-    elif arg.command == "list":
+    elif args.command == "list":
         for task in tasks:
             status = "Complete" if task["completed"] else "Pending"
             print(f"ID: {task['id']} | {task['summary']} | Due: {task["due"]} | Status: {status}")
-            
+
 # Main function to handle arguments
 def main():
     parser = argparse.ArgumentParser(description="AI-Enhanced Personal Scheduler")

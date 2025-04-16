@@ -4,7 +4,7 @@ from ics_parser import load_ics_events
 
 TASKS_PATH = "tasks.json"
 CUSTOM_TASKS_PATH = "custom_tasks.json"
-ICS_FILE = "user_qnST2MdyBUrxKU3OE9urleIJfd69bD8CESPNrXWv"
+ICS_FILE = "user_qnST2MdyBUrxKU3OE9urleIJfd69bD8CESPNrXWv.ics"
 
 # Json Storage
 
@@ -19,10 +19,13 @@ def save_tasks(tasks):
         json.dump(tasks, f, indent=2, default=str)
 
 def load_custom_tasks():
-    if not os.path.exists(TASKS_PATH):
+    if not os.path.exists(CUSTOM_TASKS_PATH) or os.path.getsize(CUSTOM_TASKS_PATH) == 0:
         return []
     with open(CUSTOM_TASKS_PATH, "r") as f:
-        return json.load(f)
+        try:
+            return json.load(f)
+        except json.JSONDecodeError:
+            return []
     
 def save_custom_tasks(tasks):
     with open(CUSTOM_TASKS_PATH, "w") as f:
@@ -33,7 +36,7 @@ def save_custom_tasks(tasks):
 def initialize_tasks():
     saved_canvas = load_tasks()
     if not saved_canvas:
-        canvas_tasks = load_ics_events("user_qnST2MdyBUrxKU3OE9urleIJfd69bD8CESPNrXWv")
+        canvas_tasks = load_ics_events(ICS_FILE)
         save_tasks(canvas_tasks)
         saved_canvas = load_tasks()
     saved_custom = load_custom_tasks()
@@ -63,7 +66,7 @@ def mark_complete(task_id, tasks):
         if task["id"] == task_id:
             task["completed"] = True
             task["remaining_duration"] = 0
-            save_tasks([t for t in all_tasks if t["source"] == "canvas"])
-            save_custom_tasks([t for t in all_tasks if t["source"] == "custom"])
+            save_tasks([t for t in tasks if t["source"] == "canvas"])
+            save_custom_tasks([t for t in tasks if t["source"] == "custom"])
             return task
     return None
